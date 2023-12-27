@@ -13,24 +13,36 @@ const numbersAsWords = {
   nine: 9,
 };
 
-const slicedLines = lines.slice(0, 20);
-
 const reverseString = (input) => [...input].reverse().join("");
-const mapWordsToNumbers = (input) =>
-  Object.keys(numbersAsWords)
-    .map((n) => (input = input.replace(n, numbersAsWords[n])))
-    .at(-1);
-// problem with word->number mapping being sequential
-console.log(mapWordsToNumbers("eightwothree")); // this needs to become 8wo3, not eigh23
-const sum = slicedLines.reduce((prev, curr) => {
-  curr = mapWordsToNumbers(curr);
-  //   console.log(curr);
-  const firstNumber = curr.charAt(curr.search(/\d/g));
-  const secondNumber = reverseString(curr).charAt(
-    reverseString(curr).search(/\d/g)
-  );
-  //   console.log(parseInt(`${firstNumber}${secondNumber}`));
+const mapWordToNumber = (input) => {
+  let result = String();
+  Object.keys(numbersAsWords).forEach((n) => {
+    if (input.includes(n)) {
+      result = input.replace(n, numbersAsWords[n]);
+    }
+  });
+  return result;
+};
+const parse = (input, reverse = false) => {
+  let charStack = String();
+  const stringSpread = reverse ? reverseString(input) : input;
+  [...stringSpread].forEach((char) => {
+    charStack = charStack.concat(char);
+    const wordToMap = reverse ? reverseString(charStack) : charStack;
+    const mappedCharStack = mapWordToNumber(wordToMap);
+    if (mappedCharStack?.length > 0) {
+      charStack = reverse ? reverseString(mappedCharStack) : mappedCharStack;
+    }
+  });
+  return charStack;
+};
+
+const sum = lines.reduce((prev, curr) => {
+  const firstString = parse(curr);
+  const firstNumber = firstString[firstString.search(/\d/g)];
+  const secondString = parse(curr, true);
+  const secondNumber = secondString[secondString.search(/\d/g)];
   return (prev += parseInt(`${firstNumber}${secondNumber}`));
 }, 0);
 
-// console.log(sum);
+console.log(sum);
